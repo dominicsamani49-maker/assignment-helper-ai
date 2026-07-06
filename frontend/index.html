@@ -3,319 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment Helper AI</title>
-    <!-- Markdown Parser Engine -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>AI Assistant</title>
     <style>
-        :root {
-            --bg-main: #212121;
-            --bg-sidebar: #171717;
-            --bg-card: #2f2f2f;
-            --text-main: #ececf1;
-            --text-muted: #b4b4b4;
-            --border-color: #2f2f2f;
-            --accent-color: #19c37d;
-            --avatar-user: #5436da;
-        }
-
-        [data-theme="light"] {
-            --bg-main: #ffffff;
-            --bg-sidebar: #f7f7f8;
-            --bg-card: #f0f0f2;
-            --text-main: #2d2d2d;
-            --text-muted: #666666;
-            --border-color: #e5e5e5;
-            --accent-color: #10a37f;
-            --avatar-user: #10a37f;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { display: flex; height: 100vh; background-color: var(--bg-main); color: var(--text-main); overflow: hidden; }
-        
-        .sidebar { width: 260px; background-color: var(--bg-sidebar); padding: 15px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border-color); }
-        .logo-area { font-size: 18px; font-weight: 600; text-align: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); color: var(--accent-color); }
-        
-        .theme-toggle-btn { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; color: var(--text-main); cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .theme-toggle-btn:hover { background-color: var(--bg-card); }
-
-        .upload-section { display: flex; flex-direction: column; gap: 10px; }
-        .file-label { display: block; padding: 10px; background-color: var(--bg-card); border: 1px dashed var(--text-muted); border-radius: 6px; text-align: center; cursor: pointer; font-size: 13px; }
-        input[type="file"] { display: none; }
-        
-        .btn { padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; }
-        .btn-primary { background-color: var(--accent-color); color: white; }
-        .btn-secondary { background-color: transparent; border: 1px solid var(--text-muted); color: var(--text-main); }
-        
-        .file-info { font-size: 12px; color: var(--text-muted); text-align: center; }
-        .history-title { font-size: 12px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-top: 10px; }
-        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .history-item { padding: 10px; background-color: var(--bg-main); border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
-        .history-item.active { background-color: var(--bg-card); border: 1px solid var(--text-muted); }
-        
-        .chat-container { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-main); position: relative; }
-        .messages-window { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; scroll-behavior: smooth; }
-        
-        .message-row { display: flex; padding: 24px 15%; width: 100%; flex-direction: column; }
-        .msg-wrapper { display: flex; width: 100%; }
-        .message-row.user-row { background-color: var(--bg-main); }
-        .message-row.bot-row { background-color: var(--bg-sidebar); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
-        
-        .avatar { width: 30px; height: 30px; border-radius: 4px; margin-right: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; color: white; }
-        .user-row .avatar { background-color: var(--avatar-user); }
-        .bot-row .avatar { background-color: var(--accent-color); }
-        
-        .message-text { font-size: 15px; line-height: 1.6; color: var(--text-main); width: 100%; }
-        .message-text p { margin-bottom: 12px; }
-        .message-text p:last-child { margin-bottom: 0; }
-        .message-text ul, .message-text ol { margin-left: 20px; margin-bottom: 12px; }
-        .message-text li { margin-bottom: 4px; }
-        
-        .source-container { margin-left: 50px; margin-top: 10px; width: 85%; }
-        .source-header { font-size: 12px; color: var(--accent-color); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 600; background: rgba(25, 195, 125, 0.1); padding: 4px 10px; border-radius: 4px; }
-        .source-body { display: none; background-color: var(--bg-main); border-left: 3px solid var(--accent-color); padding: 10px; margin-top: 8px; font-size: 13px; color: var(--text-muted); border-radius: 0 4px 4px 0; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
-
-        .suggestions-box { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 0 15% 10px 15%; width: 100%; }
-        .suggestion-chip { background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.2s; max-width: 240px; text-align: left; }
-        .suggestion-chip:hover { background-color: var(--text-muted); color: var(--bg-main); }
-
-        .input-area { padding: 10px 15% 20px 15%; background-color: var(--bg-main); }
-        .input-wrapper { position: relative; display: flex; align-items: flex-end; background-color: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 10px 0; }
-        textarea { width: 100%; min-height: 32px; max-height: 200px; padding: 6px 60px 6px 16px; background: transparent; border: none; outline: none; color: var(--text-main); resize: none; font-size: 15px; line-height: 1.5; overflow-y: auto; }
-        .send-btn { position: absolute; right: 12px; bottom: 10px; background: var(--accent-color); color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        #chat-box { border: 1px solid #ccc; padding: 20px; min-height: 200px; margin-bottom: 10px; border-radius: 8px; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="logo-area">Assignment AI 🤖</div>
-        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">☀️ Light Mode</button>
-        <button class="btn btn-secondary" onclick="createNewChat()">+ New Chat</button>
-        <div class="upload-section">
-            <label for="pdfFile" class="file-label">📁 Choose PDF File</label>
-            <input type="file" id="pdfFile" onchange="updateFileName()">
-            <div id="fileNameDisplay" class="file-info">No document active</div>
-            <button class="btn btn-primary" onclick="uploadPDF()">Upload Context</button>
-        </div>
-        <div class="history-title">Recent Chats</div>
-        <div class="history-list" id="historyList"></div>
-    </div>
-
-    <div class="chat-container">
-        <div class="messages-window" id="messages"></div>
-        
-        <div class="suggestions-box" id="suggestionsArea">
-            <div class="suggestion-chip" onclick="triggerSuggestion('Summarize the main core arguments of this active document.')">📋 Summarize Document</div>
-            <div class="suggestion-chip" onclick="triggerSuggestion('Extract all key technical terms and list their definitions cleanly.')">🔍 Define Key Terms</div>
-            <div class="suggestion-chip" onclick="triggerSuggestion('Analyze this document for any inconsistencies or logical gaps.')">💡 Critique Content</div>
-            <div class="suggestion-chip" onclick="triggerSuggestion('Create 3 study flashcard questions based on this file.')">🧠 Create Flashcards</div>
-        </div>
-
-        <div class="input-area">
-            <div class="input-wrapper">
-                <textarea id="question" placeholder="Send a message..." oninput="autoResizeTextArea()" onkeydown="handleKeyPress(event)"></textarea>
-                <button class="send-btn" onclick="askAI()">➔</button>
-            </div>
-        </div>
-    </div>
+    <h2>AI Assistant</h2>
+    <input type="file" id="pdfFile" accept="application/pdf">
+    <input type="text" id="question" placeholder="Ask anything or about the PDF...">
+    <button onclick="sendMessage()">Send</button>
+    <div id="chat-box">Response will appear here...</div>
 
     <script>
-        const API = "http://localhost:5000";
-        let allChats = {}; 
-        let activeChatId = "chat_default";
+        async function sendMessage() {
+            const question = document.getElementById('question').value;
+            const file = document.getElementById('pdfFile').files[0];
+            const chatBox = document.getElementById('chat-box');
 
-        allChats[activeChatId] = {
-            fileName: "",
-            messages: [{ type: "bot", text: "Hello! Upload a PDF or ask general knowledge questions anytime.", sources: [] }]
-        };
+            if (!question) return alert("Please enter a question");
 
-        // Theme management mechanics
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute("data-theme");
-            const newTheme = currentTheme === "light" ? "dark" : "light";
-            body.setAttribute("data-theme", newTheme);
-            document.getElementById("themeBtn").innerText = newTheme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode";
-        }
-
-        async function initApp() {
-            try {
-                const res = await fetch(`${API}/get-all-chats`);
-                const data = await res.json();
-                if(Object.keys(data).length > 0) {
-                    allChats = data;
-                    activeChatId = Object.keys(data)[0];
-                }
-            } catch(e) {
-                console.log("Starting with default session configurations.");
-            }
-            renderMessages();
-            renderSidebar();
-        }
-
-        function autoResizeTextArea() {
-            const textarea = document.getElementById("question");
-            textarea.style.height = "auto";
-            textarea.style.height = textarea.scrollHeight + "2px";
-        }
-
-        function updateFileName() {
-            const fileInput = document.getElementById("pdfFile");
-            if(fileInput.files.length > 0) {
-                document.getElementById("fileNameDisplay").innerText = "Selected: " + fileInput.files[0].name;
-            }
-        }
-
-        function toggleSuggestionsVisibility() {
-            const chatLog = allChats[activeChatId]?.messages || [];
-            const userMessages = chatLog.filter(m => m.type === "user").length;
-            const suggestionsElement = document.getElementById("suggestionsArea");
-            suggestionsElement.style.display = userMessages > 0 ? "none" : "flex";
-        }
-
-        function renderMessages() {
-            const win = document.getElementById("messages");
-            win.innerHTML = "";
-            
-            const chatObj = allChats[activeChatId] || { messages: [] };
-            document.getElementById("fileNameDisplay").innerText = chatObj.fileName ? "Active: " + chatObj.fileName : "No document active";
-
-            chatObj.messages.forEach(msg => {
-                const row = document.createElement("div");
-                row.className = `message-row ${msg.type}-row`;
-                
-                const processedText = msg.type === "bot" ? marked.parse(msg.text) : msg.text;
-
-                let layoutContent = `
-                    <div class="msg-wrapper">
-                        <div class="avatar">${msg.type==="user"?'U':'AI'}</div>
-                        <div class="message-text">${processedText}</div>
-                    </div>
-                `;
-
-                if (msg.type === "bot" && msg.sources && msg.sources.length > 0) {
-                    const cleanSourceText = msg.sources.join("\n\n---\n\n");
-                    layoutContent += `
-                        <div class="source-container">
-                            <div class="source-header" onclick="toggleSource(this)">▶ View Document Source</div>
-                            <div class="source-body">${cleanSourceText}</div>
-                        </div>
-                    `;
-                }
-
-                row.innerHTML = layoutContent;
-                win.appendChild(row);
-            });
-            win.scrollTop = win.scrollHeight;
-            toggleSuggestionsVisibility();
-        }
-
-        function toggleSource(headerElement) {
-            const body = headerElement.nextElementSibling;
-            const isHidden = window.getComputedStyle(body).display === "none";
-            body.style.display = isHidden ? "block" : "none";
-            headerElement.innerText = isHidden ? "▼ Hide Document Source" : "▶ View Document Source";
-        }
-
-        function renderSidebar() {
-            const list = document.getElementById("historyList");
-            list.innerHTML = "";
-            Object.keys(allChats).forEach(id => {
-                const item = document.createElement("div");
-                item.className = `history-item ${id === activeChatId ? 'active' : ''}`;
-                const firstUserMsg = allChats[id].messages.find(m => m.type === "user");
-                item.innerText = firstUserMsg ? firstUserMsg.text : "New Chat";
-                item.onclick = () => { activeChatId = id; renderMessages(); renderSidebar(); };
-                list.appendChild(item);
-            });
-        }
-
-        function createNewChat() {
-            activeChatId = "chat_" + Date.now();
-            allChats[activeChatId] = {
-                fileName: "",
-                messages: [{ type: "bot", text: "New clean session ready!", sources: [] }]
-            };
-            document.getElementById("pdfFile").value = "";
-            renderMessages();
-            renderSidebar();
-        }
-
-        async function uploadPDF() {
-            const file = document.getElementById("pdfFile").files[0];
-            if (!file) return alert("Please select a PDF file first.");
+            chatBox.innerText = "Thinking...";
             const formData = new FormData();
-            formData.append("pdf", file);
-            formData.append("chatId", activeChatId);
+            formData.append('question', question);
+            if (file) formData.append('file', file);
 
-            const res = await fetch(`${API}/upload-pdf`, { method: "POST", body: formData });
+            const res = await fetch('/chat', { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.message) {
-                allChats[activeChatId].fileName = data.fileName;
-                document.getElementById("fileNameDisplay").innerText = "Active: " + data.fileName;
-                alert("PDF linked and securely saved to database!");
-            }
+            chatBox.innerText = data.answer || data.error;
         }
-
-        function triggerSuggestion(textValue) {
-            document.getElementById("question").value = textValue;
-            autoResizeTextArea();
-            askAI();
-        }
-
-        async function askAI() {
-            const textarea = document.getElementById("question");
-            const question = textarea.value.trim();
-            if (!question) return;
-
-            allChats[activeChatId].messages.push({ type: "user", text: question, sources: [] });
-            renderMessages();
-            renderSidebar();
-            
-            textarea.value = "";
-            textarea.style.height = "32px";
-
-            const win = document.getElementById("messages");
-            const row = document.createElement("div");
-            row.className = "message-row bot-row";
-            row.innerHTML = `
-                <div class="msg-wrapper">
-                    <div class="avatar">AI</div>
-                    <div class="message-text" id="thinking-placeholder">Thinking...</div>
-                </div>
-            `;
-            win.appendChild(row);
-            win.scrollTop = win.scrollHeight;
-
-            try {
-                const response = await fetch(`${API}/ask-pdf`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ question, chatId: activeChatId })
-                });
-
-                const data = await response.json();
-                document.getElementById("thinking-placeholder").remove();
-                
-                allChats[activeChatId].messages.push({ 
-                    type: "bot", 
-                    text: data.answer, 
-                    sources: data.sources || [] 
-                });
-                renderMessages();
-
-            } catch (err) {
-                document.getElementById("thinking-placeholder").innerText = "Error contacting database cluster.";
-            }
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                askAI();
-            }
-        }
-
-        initApp();
     </script>
 </body>
 </html>
