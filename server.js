@@ -8,12 +8,12 @@ require('dotenv').config();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// Ensure the API Key is loaded
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(cors());
 app.use(express.json());
-
-// Serves your frontend folder
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.post('/chat', upload.single('file'), async (req, res) => {
@@ -41,5 +41,8 @@ app.post('/chat', upload.single('file'), async (req, res) => {
     }
 });
 
+// Port configuration for Render
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server live and listening on port ${PORT}`);
+});
