@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Assistant</title>
+    <title>Assignment Helper AI</title>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
         #chat-box { border: 1px solid #ccc; padding: 20px; min-height: 200px; margin-bottom: 10px; border-radius: 8px; }
@@ -12,28 +12,33 @@
     </style>
 </head>
 <body>
-    <h2>AI Assistant</h2>
+    <h2>Assignment Helper AI</h2>
     <input type="file" id="pdfFile" accept="application/pdf">
-    <input type="text" id="question" placeholder="Ask anything or about the PDF...">
+    <input type="text" id="question" placeholder="Ask anything...">
     <button onclick="sendMessage()">Send</button>
     <div id="chat-box">Response will appear here...</div>
 
     <script>
         async function sendMessage() {
             const question = document.getElementById('question').value;
-            const file = document.getElementById('pdfFile').files[0];
+            const fileInput = document.getElementById('pdfFile').files[0];
             const chatBox = document.getElementById('chat-box');
 
             if (!question) return alert("Please enter a question");
 
             chatBox.innerText = "Thinking...";
+            
             const formData = new FormData();
             formData.append('question', question);
-            if (file) formData.append('file', file);
+            if (fileInput) formData.append('file', fileInput);
 
-            const res = await fetch('/chat', { method: 'POST', body: formData });
-            const data = await res.json();
-            chatBox.innerText = data.answer || data.error;
+            try {
+                const res = await fetch('/chat', { method: 'POST', body: formData });
+                const data = await res.json();
+                chatBox.innerText = data.answer || "No response.";
+            } catch (error) {
+                chatBox.innerText = "Error connecting to server.";
+            }
         }
     </script>
 </body>
