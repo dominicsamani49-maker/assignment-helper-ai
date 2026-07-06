@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
@@ -14,7 +13,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// This looks for your index.html inside the 'frontend' folder
+// Serves your frontend folder
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.post('/chat', upload.single('file'), async (req, res) => {
@@ -37,9 +36,10 @@ app.post('/chat', upload.single('file'), async (req, res) => {
 
         res.json({ answer: response.choices[0].message.content });
     } catch (error) {
+        console.error("Server Error:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
