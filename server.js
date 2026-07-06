@@ -5,16 +5,14 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Root route to handle "Cannot GET /"
+// This route fixes "Cannot GET /"
 app.get('/', (req, res) => {
-  res.send('Assignment Helper AI is live and connected!');
+  res.send('Assignment Helper AI is live!');
 });
 
-// MongoDB Connection
 const PORT = process.env.PORT || 10000;
 
 mongoose.connect(process.env.MONGO_URI)
@@ -24,7 +22,4 @@ mongoose.connect(process.env.MONGO_URI)
       console.log(`🚀 Server live and listening on port ${PORT}`);
     });
   })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
+  .catch((err) => console.error(err));
