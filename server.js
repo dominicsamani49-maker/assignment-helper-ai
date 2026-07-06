@@ -1,48 +1,28 @@
-const express = require('express');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const Groq = require('groq-sdk');
-const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
 
 const app = express();
-const upload = multer({ storage: multer.memoryStorage() });
 
-// Ensure the API Key is loaded
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'frontend')));
 
-app.post('/chat', upload.single('file'), async (req, res) => {
-    try {
-        const { question } = req.body;
-        let systemMessage = "You are a helpful AI assistant.";
-        
-        if (req.file) {
-            const data = await pdfParse(req.file.buffer);
-            systemMessage += `\n\nCONTEXT FROM PDF: ${data.text}`;
-        }
-
-        const response = await groq.chat.completions.create({
-            messages: [
-                { role: "system", content: systemMessage },
-                { role: "user", content: question }
-            ],
-            model: "llama-3.3-70b-versatile",
-        });
-
-        res.json({ answer: response.choices[0].message.content });
-    } catch (error) {
-        console.error("Server Error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
+// 1. The Route that fixes "Cannot GET /"
+app.get('/', (req, res) => {
+  res.send('Assignment Helper AI is live and connected to the database!');
 });
 
-// Port configuration for Render
+// MongoDB Connection
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server live and listening on port ${PORT}`);
-});
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('💾 MongoDB Connected Successfully!');
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server live and listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => console.error('Could not connect to MongoDB:', err));
